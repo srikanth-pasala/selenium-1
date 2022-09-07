@@ -29,7 +29,7 @@ module Selenium
 
           extract_browser_from_bazel_target_name
 
-          @driver = ENV.fetch('WD_SPEC_DRIVER', :chrome).to_sym
+          @driver = ENV.fetch('WD_SPEC_DRIVER', :firefox).to_sym
           @driver_instance = nil
         end
 
@@ -196,7 +196,7 @@ module Selenium
         end
 
         def create_firefox_driver(opt = {})
-          WebDriver::Firefox.path = ENV.fetch('FIREFOX_BINARY', nil) if ENV.key?('FIREFOX_BINARY')
+          opt[:options] = WebDriver::Options.firefox(log_level: 'TRACE')
           WebDriver::Driver.for :firefox, opt
         end
 
