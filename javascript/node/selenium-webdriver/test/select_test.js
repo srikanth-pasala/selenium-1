@@ -20,13 +20,15 @@
 const assert = require('assert')
 const { Select, By } = require('..')
 const { Pages, ignore, suite } = require('../lib/test')
-const { Browser } = require('../index')
+const { Browser, error} = require('../index')
 
 let singleSelectValues1 = {
   name: 'selectomatic',
   values: ['One', 'Two', 'Four', 'Still learning how to count, apparently'],
 }
 let disabledSelect = { name: 'no-select', values: ['Foo'] }
+let disabledSingleSelect = { name: 'single_disabled', values: ['Enabled', 'Disabled']}
+let disabledMultiSelect = { name: 'multi_disabled', values: ['Enabled', 'Disabled']}
 let multiSelectValues1 = {
   name: 'multi',
   values: ['Eggs', 'Ham', 'Sausages', 'Onion gravy'],
@@ -48,6 +50,28 @@ suite(
     after(async () => await driver.quit())
 
     describe('Select by tests', function () {
+      it('Should error when element not a select', async function () {
+        await driver.get(Pages.formPage)
+
+        try {
+          new Select(driver.findElement(By.name('checky')));
+          assert.fail("This should throw an error")
+        } catch (e) {
+          assert(e.message.includes('Select only works on <select> elements'))
+        }
+      })
+
+      it('Should error when select element disabled', async function () {
+        await driver.get(Pages.formPage)
+
+        try {
+          new Select(driver.findElement(By.name(disabledSelect['name'])))
+          assert.fail("This should throw an error")
+        } catch (e) {
+          assert(e.message.includes('You may not select a disabled option'))
+        }
+      })
+
       it('Should be able to select by value', async function () {
         await driver.get(Pages.formPage)
 
@@ -98,57 +122,52 @@ suite(
         }
       })
 
-      ignore(browsers(Browser.FIREFOX)).it(
-        'Should check selected option if select is disabled by index',
+      it('Should error if selected option is disabled on select by index',
         async function () {
           await driver.get(Pages.formPage)
 
           let selectorObject = new Select(
-            driver.findElement(By.name(disabledSelect['name']))
+            driver.findElement(By.name(disabledSingleSelect['name']))
           )
-          let firstSelected = await selectorObject.getFirstSelectedOption()
-          await selectorObject.selectByIndex(1)
-          let lastSelected = await selectorObject.getFirstSelectedOption()
-          assert.deepEqual(
-            await firstSelected.getAttribute('value'),
-            await lastSelected.getAttribute('value')
-          )
+
+          try {
+            await selectorObject.selectByIndex(1)
+            assert.fail("This should throw an error")
+          } catch (e) {
+            assert(e.message.includes('You may not select a disabled option'))
+          }
         }
       )
 
-      ignore(browsers(Browser.FIREFOX)).it(
-        'Should check selected option if select is disabled by value',
+      it('Should error if selected option is disabled on select by value',
         async function () {
           await driver.get(Pages.formPage)
 
           let selectorObject = new Select(
-            driver.findElement(By.name(disabledSelect['name']))
+            driver.findElement(By.name(disabledSingleSelect['name']))
           )
-          let firstSelected = await selectorObject.getFirstSelectedOption()
-          await selectorObject.selectByValue('bar')
-          let lastSelected = await selectorObject.getFirstSelectedOption()
-          assert.deepEqual(
-            await firstSelected.getAttribute('value'),
-            await lastSelected.getAttribute('value')
-          )
+          try {
+            await selectorObject.selectByValue(disabledSingleSelect['values'][1].toLowerCase())
+            assert.fail("This should throw an error")
+          } catch (e) {
+            assert(e.message.includes('You may not select a disabled option'))
+          }
         }
       )
 
-      ignore(browsers(Browser.FIREFOX)).it(
-        'Should check selected option if select is disabled by visible text',
+      it('Should error if selected option is disabled on select by visible text',
         async function () {
           await driver.get(Pages.formPage)
 
           let selectorObject = new Select(
-            driver.findElement(By.name(disabledSelect['name']))
+            driver.findElement(By.name(disabledSingleSelect['name']))
           )
-          let firstSelected = await selectorObject.getFirstSelectedOption()
-          await selectorObject.selectByVisibleText('Bar')
-          let lastSelected = await selectorObject.getFirstSelectedOption()
-          assert.deepEqual(
-            await firstSelected.getAttribute('value'),
-            await lastSelected.getAttribute('value')
-          )
+          try {
+            await selectorObject.selectByVisibleText(disabledSingleSelect['values'][1])
+            assert.fail("This should throw an error")
+          } catch (e) {
+            assert(e.message.includes('You may not select a disabled option'))
+          }
         }
       )
 

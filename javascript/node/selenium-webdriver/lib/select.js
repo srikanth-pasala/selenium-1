@@ -147,6 +147,12 @@ class Select {
   constructor(element) {
     this.element = element
 
+    this.element.isEnabled().then(function (enabled) {
+      if (!enabled) {
+        throw new Error(`Select element is disabled and may not be used`)
+      }
+    })
+
     this.element.getAttribute('tagName').then(function (tagName) {
       if (tagName.toLowerCase() !== 'select') {
         throw new Error(`Select only works on <select> elements`)
@@ -192,6 +198,9 @@ class Select {
     for (let option of options) {
       if ((await option.getAttribute('index')) === index.toString()) {
         if (!(await option.isSelected())) {
+          if (!(await option.isEnabled())) {
+            throw new Error("You may not select a disabled option")
+          }
           await option.click()
         }
       }
@@ -225,6 +234,9 @@ class Select {
 
     for (let option of options) {
       if (!(await option.isSelected())) {
+        if (!(await option.isEnabled())) {
+          throw new Error("You may not select a disabled option")
+        }
         await option.click()
       }
 
@@ -283,6 +295,9 @@ class Select {
       xpath: selections.join('|'),
     })
     if (!(await optionElement.isSelected())) {
+      if (!(await option.isEnabled())) {
+        throw new Error("You may not select a disabled option")
+      }
       await optionElement.click()
     }
   }
