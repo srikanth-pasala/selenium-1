@@ -196,6 +196,7 @@ module Selenium
         end
 
         def create_firefox_driver(opt = {})
+          ENV['MOZ_LOG']= 'Widget:5'
           opt[:options] = WebDriver::Options.firefox(log_level: 'TRACE')
           WebDriver::Driver.for :firefox, opt
         end
