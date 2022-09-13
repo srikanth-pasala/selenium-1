@@ -189,6 +189,8 @@ jobs:
           matrix.browser == 'chrome'
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run browser tests in ${{ matrix.browser }}
         uses: ./.github/actions/bazel-test
         with:
@@ -243,6 +245,8 @@ jobs:
           matrix.browser == 'chrome'
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run server tests
         uses: ./.github/actions/bazel-test
         with:
@@ -280,6 +284,8 @@ jobs:
           version: latest
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run browser tests in Firefox
         uses: ./.github/actions/bazel-test
         with:

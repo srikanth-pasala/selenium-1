@@ -67,6 +67,8 @@ jobs:
           matrix.browser == 'chrome'
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run JavaScript tests
         uses: ./.github/actions/bazel-test
         with:
@@ -104,6 +106,8 @@ jobs:
           version: ${{ matrix.version }}
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run atom tests on Firefox
         uses: ./.github/actions/bazel
         with:

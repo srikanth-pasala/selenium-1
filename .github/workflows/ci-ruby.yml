@@ -75,7 +75,10 @@ jobs:
             ${{ runner.os }}-bazel-ruby-${{ matrix.target }}-
       - uses: ./.github/actions/setup-bazelisk
       - uses: ./.github/actions/setup-chrome
-      - run: Xvfb :99 &
+      - name: Start XVFB
+        run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - uses: ./.github/actions/bazel
         with:
           command: test --test_output=all //rb:${{ matrix.target }}
@@ -109,7 +112,10 @@ jobs:
       - uses: ./.github/actions/setup-bazelisk
       - name: Setup Firefox and GeckoDriver
         uses: ./.github/actions/setup-firefox
-      - run: Xvfb :99 &
+      - name: Start XVFB
+        run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - uses: ./.github/actions/bazel
         with:
           command: test --test_output=all //rb:${{ matrix.target }}

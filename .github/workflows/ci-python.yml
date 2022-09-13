@@ -144,6 +144,8 @@ jobs:
         uses: ./.github/actions/setup-chrome
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run browser tests in Chrome
         uses: ./.github/actions/bazel-test
         with:
@@ -183,6 +185,8 @@ jobs:
         uses: ./.github/actions/setup-firefox
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run browser tests in Firefox (Remote)
         uses: ./.github/actions/bazel
         with:
@@ -221,6 +225,8 @@ jobs:
         uses: ./.github/actions/setup-firefox
       - name: Start XVFB
         run: Xvfb :99 &
+      - name: Start Fluxbox
+        run: sudo apt-get -y install fluxbox && fluxbox &
       - name: Run browser tests in Firefox
         uses: ./.github/actions/bazel-test
         with:
