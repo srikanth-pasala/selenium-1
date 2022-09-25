@@ -152,6 +152,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { "browser": "firefox", "version": "latest-esr" }
           - { "browser": "firefox", "version": "latest" }
           - { "browser": "firefox", "version": "latest-beta" }
           - { "browser": "firefox", "version": "latest-devedition" }
@@ -205,6 +206,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { "browser": "firefox", "version": "latest-esr" }
           - { "browser": "firefox", "version": "latest" }
           - { "browser": "firefox", "version": "latest-beta" }
           - { "browser": "firefox", "version": "latest-devedition" }
