@@ -1,8 +1,8 @@
 name: 'Setup XVFB and FluxBox'
 description: 'Setup requirements for running tests on headless Linux'
+env:
+  DISPLAY: :99
 runs:
-  env:
-    DISPLAY: :99
   using: "composite"
   steps:
     - name: Setup Fluxbox
