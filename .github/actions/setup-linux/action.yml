@@ -6,11 +6,11 @@ runs:
   using: "composite"
   steps:
     - name: Setup Fluxbox
-      if: ${{ matrix.os == 'ubuntu' }}
       run: sudo apt-get -y install fluxbox
+      shell: bash
     - name: Start Fluxbox
-      if: ${{ matrix.os == 'ubuntu' }}
       run: fluxbox -display :99 &
+      shell: bash
     - name: Start XVFB
-      if: ${{ matrix.os == 'ubuntu' }}
       run: Xvfb :99 &
+      shell: bash
