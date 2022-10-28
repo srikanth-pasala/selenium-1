@@ -109,10 +109,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-
       - name: Setup Fluxbox
+        if: ${{ matrix.os == 'ubuntu' }}
         run: sudo apt-get -y install fluxbox
       - name: Start XVFB
+        if: ${{ matrix.os == 'ubuntu' }}
         run: Xvfb :99 &
       - name: Start Fluxbox
+        if: ${{ matrix.os == 'ubuntu' }}
         run: fluxbox -display :99 &
       - name: Setup ${{ matrix.browser }}
         uses: abhi1693/setup-browser@v0.3.4
