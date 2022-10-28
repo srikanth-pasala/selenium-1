@@ -1,0 +1,16 @@
+name: 'Setup XVFB and FluxBox'
+description: 'Setup requirements for running tests on headless Linux'
+runs:
+  env:
+    DISPLAY: :99
+  using: "composite"
+  steps:
+    - name: Setup Fluxbox
+      if: ${{ matrix.os == 'ubuntu' }}
+      run: sudo apt-get -y install fluxbox
+    - name: Start Fluxbox
+      if: ${{ matrix.os == 'ubuntu' }}
+      run: fluxbox -display :99 &
+    - name: Start XVFB
+      if: ${{ matrix.os == 'ubuntu' }}
+      run: Xvfb :99 &

@@ -106,34 +106,24 @@ jobs:
           key: ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
             ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-
+      - name: Setup Linux
+        if: ${{ matrix.os == 'ubuntu' }}
+        uses: ./.github/actions/setup-linux
       - name: Setup ${{ matrix.browser }}
         uses: abhi1693/setup-browser@v0.3.4
         with:
           browser: ${{ matrix.browser }}
           version: ${{ matrix.version }}
-      - name: Setup Fluxbox
-        if: ${{ matrix.os == 'ubuntu' }}
-        run: sudo apt-get -y install fluxbox
-      - name: Start Fluxbox
-        if: ${{ matrix.os == 'ubuntu' }}
-        run: fluxbox -display :99 &
-      - name: Start XVFB
-        if: ${{ matrix.os == 'ubuntu' }}
-        run: Xvfb :99 &
       - name: Run ${{ matrix.browser }} tests
         if: ${{ matrix.remote == 'local' }}
         uses: ./.github/actions/bazel
         with:
           command: test --test_output=all --flaky_test_attempts=3 //rb:${{ matrix.browser }}-test
-        env:
-          DISPLAY: :99
       - name: Run Remote ${{ matrix.browser }} 'tests'
         if: ${{ matrix.remote == 'remote' }}
         uses: ./.github/actions/bazel
         with:
           command: test --test_output=all --flaky_test_attempts=3 //rb:remote-${{ matrix.browser }}-test
-        env:
-          DISPLAY: :99
 
   docs:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
