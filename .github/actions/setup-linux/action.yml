@@ -8,9 +8,9 @@ runs:
     - name: Setup Fluxbox
       run: sudo apt-get -y install fluxbox
       shell: bash
-    - name: Start Fluxbox
-      run: fluxbox -display :99 &
-      shell: bash
     - name: Start XVFB
       run: Xvfb :99 &
+      shell: bash
+    - name: Start Fluxbox
+      run: fluxbox -display :99 &
       shell: bash
