@@ -20,15 +20,14 @@ jobs:
     with:
       bazel-target-prefix: '//rb'
 
-  build:
+  build-linux:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
     needs: check_workflow
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         target: [ 'selenium-devtools', 'selenium-webdriver' ]
-        os: [ 'ubuntu-latest', 'macos-latest' ]
-    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source tree
         uses: actions/checkout@v2
@@ -41,7 +40,7 @@ jobs:
         with:
           ruby-version: 2.7
       - name: Cache Bazel artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/bazel-disk
@@ -63,11 +62,11 @@ jobs:
 
   browser:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
-    needs: build
+    needs: build-linux
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos, ubuntu ]
+        os: [ ubuntu ]
         browser: [ firefox, chrome, edge ]
         version: [ stable, beta, latest, latest-beta ]
         remote: [ local, remote ]
@@ -120,7 +119,7 @@ jobs:
         with:
           ruby-version: 2.7
       - name: Cache Bazel artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/bazel-disk
@@ -172,7 +171,7 @@ jobs:
         with:
           ruby-version: 2.7
       - name: Cache Bazel artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/bazel-disk
@@ -197,7 +196,7 @@ jobs:
         with:
           ruby-version: 2.7
       - name: Cache Bazel artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/bazel-disk
@@ -226,7 +225,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Cache Bazel artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/bazel-disk
