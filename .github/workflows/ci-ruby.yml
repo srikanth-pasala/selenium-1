@@ -120,6 +120,7 @@ jobs:
             ~/.cache/bazel-repo
           key: ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
+            ${{ runner.os }}-bazel-ruby-build-gem-
             ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-
       - name: Setup Fluxbox
         if: ${{ matrix.os == 'ubuntu' }}
