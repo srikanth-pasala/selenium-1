@@ -59,8 +59,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu, macos ]
-        browser: [ chrome, edge, firefox ]
+        os: [ macos, ubuntu ]
+        browser: [ firefox, chrome, edge ]
         version: [ stable, beta, latest, latest-beta ]
         remote: [ local, remote ]
         exclude:
@@ -80,6 +80,15 @@ jobs:
             version: 'latest-beta'
           - browser: 'edge'
             version: 'beta'
+          - os: 'macos'
+            browser: 'firefox'
+            version: 'latest-beta'
+          - os: 'macos'
+            browser: 'firefox'
+            remote: 'remote'
+          - os: 'macos'
+            browser: 'edge'
+            remote: 'remote'
           - remote: 'remote'
             version: 'beta'
           - remote: 'remote'
