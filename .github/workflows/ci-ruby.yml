@@ -24,10 +24,6 @@ jobs:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
     needs: check_workflow
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [ 'selenium-devtools', 'selenium-webdriver' ]
     steps:
       - name: Checkout source tree
         uses: actions/checkout@v2
@@ -46,13 +42,17 @@ jobs:
             ~/.cache/bazel-disk
             ~/.cache/bazel-repo
           key: |
-            ${{ runner.os }}-bazel-ruby-build-gem-${{ hashFiles('**/BUILD.bazel') }}
+            ${{ runner.os }}-bazel-ruby-build-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
-            ${{ runner.os }}-bazel-ruby-build-gem-
-      - name: Build Gems
+            ${{ runner.os }}-bazel-ruby-build-
+      - name: Build Selenium WebDriver
         uses: ./.github/actions/bazel
         with:
-          command: build //rb:${{ matrix.target }}
+          command: build //rb:selenium-webdriver
+      - name: Build Selenium DevTools
+        uses: ./.github/actions/bazel
+        with:
+          command: build //rb:selenium-devtools
 
   browser:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
@@ -120,7 +120,7 @@ jobs:
             ~/.cache/bazel-repo
           key: ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
-            ${{ runner.os }}-bazel-ruby-build-gem-
+            ${{ runner.os }}-bazel-ruby-build-
             ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-
       - name: Setup Fluxbox
         if: ${{ matrix.os == 'ubuntu' }}
