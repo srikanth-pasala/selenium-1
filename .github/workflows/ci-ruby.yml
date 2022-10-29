@@ -23,11 +23,12 @@ jobs:
   build:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
     needs: check_workflow
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         target: [ 'selenium-devtools', 'selenium-webdriver' ]
+        os: [ 'ubuntu-latest', 'macos-latest' ]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source tree
         uses: actions/checkout@v2
@@ -45,17 +46,24 @@ jobs:
           path: |
             ~/.cache/bazel-disk
             ~/.cache/bazel-repo
-          key: ${{ runner.os }}-bazel-ruby-build-gem-${{ matrix.target }}-${{ hashFiles('**/BUILD.bazel') }}
+          key: |
+            ${{ runner.os }}-bazel-ruby-build-gem-${{ hashFiles('**/BUILD.bazel') }}
+            ${{ runner.os }}-bazel-build-grid-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
-            ${{ runner.os }}-bazel-ruby-build-gem-${{ matrix.target }}-
+            ${{ runner.os }}-bazel-ruby-build-gem-
+            ${{ runner.os }}-bazel-build-
       - name: Build Gems
         uses: ./.github/actions/bazel
         with:
           command: build //rb:${{ matrix.target }}
+      - name: Build Grid
+        uses: ./.github/actions/bazel
+        with:
+          command: build grid
 
   browser:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
-    needs: check_workflow
+    needs: build
     strategy:
       fail-fast: false
       matrix:
@@ -120,6 +128,7 @@ jobs:
           key: ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
             ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-
+            ${{ runner.os }}-bazel-build-
       - name: Setup Fluxbox
         if: ${{ matrix.os == 'ubuntu' }}
         run: sudo apt-get -y install fluxbox
