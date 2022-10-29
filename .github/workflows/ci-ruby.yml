@@ -129,6 +129,12 @@ jobs:
       - name: Start Fluxbox
         if: ${{ matrix.os == 'ubuntu' }}
         run: fluxbox -display :99 &
+      - name: Adjust Screen Resolution (Mac)
+        if: ${{ matrix.os == 'macos' }}
+        run: |
+         system_profiler SPDisplaysDataType | grep Resolution
+         "/Library/Application Support/VMware Tools/vmware-resolutionSet" 2560 1440
+         system_profiler SPDisplaysDataType | grep Resolution
       - name: Setup ${{ matrix.browser }}
         uses: abhi1693/setup-browser@v0.3.4
         with:
