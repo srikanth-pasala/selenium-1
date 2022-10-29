@@ -138,12 +138,12 @@ jobs:
         if: ${{ matrix.remote == 'local' }}
         uses: ./.github/actions/bazel
         with:
-          command: test --test_output=all --flaky_test_attempts=3 //rb:${{ matrix.browser }}-test
+          command: test --test_output=all --flaky_test_attempts=2 //rb:${{ matrix.browser }}-test
       - name: Run Remote ${{ matrix.browser }} 'tests'
         if: ${{ matrix.remote == 'remote' }}
         uses: ./.github/actions/bazel
         with:
-          command: test --test_output=all --flaky_test_attempts=3 //rb:remote-${{ matrix.browser }}-test
+          command: test --test_output=all --flaky_test_attempts=2 //rb:remote-${{ matrix.browser }}-test
 
   docs:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
