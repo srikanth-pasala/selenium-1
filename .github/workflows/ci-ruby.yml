@@ -91,7 +91,7 @@ jobs:
             remote: 'remote'
           - os: 'macos'
             browser: 'chrome'
-            remote: 'beta'
+            version: 'beta'
           - remote: 'remote'
             version: 'beta'
           - remote: 'remote'
