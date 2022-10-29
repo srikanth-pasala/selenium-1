@@ -47,18 +47,12 @@ jobs:
             ~/.cache/bazel-repo
           key: |
             ${{ runner.os }}-bazel-ruby-build-gem-${{ hashFiles('**/BUILD.bazel') }}
-            ${{ runner.os }}-bazel-build-grid-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
             ${{ runner.os }}-bazel-ruby-build-gem-
-            ${{ runner.os }}-bazel-build-
       - name: Build Gems
         uses: ./.github/actions/bazel
         with:
           command: build //rb:${{ matrix.target }}
-      - name: Build Grid
-        uses: ./.github/actions/bazel
-        with:
-          command: build grid
 
   browser:
     if: ${{ needs.check_workflow.outputs.result == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(toJson(github.event.commits), '[run ruby]') == true }}
@@ -127,7 +121,6 @@ jobs:
           key: ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
             ${{ runner.os }}-bazel-ruby-${{ matrix.browser }}-
-            ${{ runner.os }}-bazel-build-
       - name: Setup Fluxbox
         if: ${{ matrix.os == 'ubuntu' }}
         run: sudo apt-get -y install fluxbox
