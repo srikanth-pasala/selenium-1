@@ -1,10 +1,11 @@
+load("@bazel_skylib//rules:select_file.bzl", "select_file")
 load("//common:defs.bzl", "copy_file")
-load("//rb:defs.bzl", "ruby_gem")
 load(
-    "@bazelruby_rules_ruby//ruby:defs.bzl",
-    "ruby_binary",
-    "ruby_library",
-    "ruby_test",
+    "@rules_ruby//ruby:defs.bzl",
+    "rb_binary",
+    "rb_gem",
+    "rb_library",
+    "rb_test",
 )
 
 package(default_visibility = ["//:__subpackages__"])
@@ -64,17 +65,31 @@ copy_file(
     out = "selenium_server_deploy.jar",
 )
 
-genrule(
-    name = "license",
-    srcs = ["//:license"],
-    outs = [
-        "LICENSE",
-        "NOTICE",
-    ],
-    cmd = "cp $(locations //:license) $(@D)",
+select_file(
+    name = "global-license",
+    srcs = "//:license",
+    subpath = "LICENSE",
 )
 
-ruby_gem(
+select_file(
+    name = "global-notice",
+    srcs = "//:license",
+    subpath = "NOTICE",
+)
+
+copy_file(
+  name = "license",
+  src = ":global-license",
+  out = "LICENSE",
+)
+
+copy_file(
+  name = "notice",
+  src = ":global-notice",
+  out = "NOTICE",
+)
+
+rb_gem(
     name = "selenium-webdriver",
     gemspec = "selenium-webdriver.gemspec",
     deps = [
@@ -89,13 +104,13 @@ ruby_gem(
     ],
 )
 
-ruby_gem(
+rb_gem(
     name = "selenium-devtools",
     gemspec = "selenium-devtools.gemspec",
     deps = [":devtools"],
 )
 
-ruby_library(
+rb_library(
     name = "bidi",
     srcs = glob([
         "lib/selenium/webdriver/bidi/**/*.rb",
@@ -106,7 +121,7 @@ ruby_library(
     deps = [":common"],
 )
 
-ruby_library(
+rb_library(
     name = "chrome",
     srcs = glob([
         "lib/selenium/webdriver/chrome/**/*.rb",
@@ -115,7 +130,7 @@ ruby_library(
     deps = [":common"],
 )
 
-ruby_library(
+rb_library(
     name = "common",
     srcs = glob([
         "lib/selenium/webdriver/atoms.rb",
@@ -141,15 +156,11 @@ ruby_library(
         ":manager-macos",
         ":manager-windows",
         ":license",
-    ],
-    deps = [
-        "@bundle//:childprocess",
-        "@bundle//:rexml",
-        "@bundle//:rubyzip",
+        ":notice",
     ],
 )
 
-ruby_library(
+rb_library(
     name = "edge",
     srcs = glob([
         "lib/selenium/webdriver/edge/**/*.rb",
@@ -158,7 +169,7 @@ ruby_library(
     deps = [":chrome"],
 )
 
-ruby_library(
+rb_library(
     name = "firefox",
     srcs = glob([
         "lib/selenium/webdriver/firefox/**/*.rb",
@@ -167,7 +178,7 @@ ruby_library(
     deps = [":common"],
 )
 
-ruby_library(
+rb_library(
     name = "ie",
     srcs = glob([
         "lib/selenium/webdriver/ie/**/*.rb",
@@ -176,7 +187,7 @@ ruby_library(
     deps = [":common"],
 )
 
-ruby_library(
+rb_library(
     name = "remote",
     srcs = glob([
         "lib/selenium/webdriver/remote/**/*.rb",
@@ -185,7 +196,7 @@ ruby_library(
     deps = [":common"],
 )
 
-ruby_library(
+rb_library(
     name = "safari",
     srcs = glob([
         "lib/selenium/webdriver/safari/**/*.rb",
@@ -194,15 +205,14 @@ ruby_library(
     deps = [":common"],
 )
 
-ruby_library(
+rb_library(
     name = "devtools",
     srcs = glob([
         "Gemfile",
         "lib/selenium/devtools.rb",
         "lib/selenium/devtools/version.rb",
         "selenium-devtools.gemspec",
-    ]) + [":license"] + [":cdp-" + n for n in CDP_VERSIONS],
-    deps = ["@bundle//:websocket"],
+    ]) + [":license", ":notice"] + [":cdp-" + n for n in CDP_VERSIONS],
 )
 
 [genrule(
@@ -210,38 +220,24 @@ ruby_library(
     srcs = [
         "//common/devtools/chromium/" + n + ":browser_protocol",
         "//common/devtools/chromium/" + n + ":js_protocol",
+        ":cdp-generate",
     ],
     outs = [
         "lib/selenium/devtools/" + n,
         "lib/selenium/devtools/" + n + ".rb",
     ],
-    cmd = "ruby $(location :cdp-generate) $(location //common/devtools/chromium/" + n + ":browser_protocol) $(location //common/devtools/chromium/" + n + ":js_protocol) $(OUTS) " + n,
-    tools = [":cdp-generate"],
+    cmd = "$(location @rules_ruby_dist//:ruby) $(location :cdp-generate) $(location //common/devtools/chromium/" + n + ":browser_protocol) $(location //common/devtools/chromium/" + n + ":js_protocol) $(OUTS) " + n,
+    tools = [
+        "@rules_ruby_dist//:ruby",
+    ],
 ) for n in CDP_VERSIONS]
 
-ruby_binary(
+filegroup(
     name = "cdp-generate",
-    srcs = glob([
-        "lib/selenium/webdriver/support/cdp",
-        "lib/selenium/webdriver/support/cdp/**/*",
-        "lib/selenium/webdriver/support/cdp_client_generator.rb",
-    ]),
-    main = "lib/selenium/webdriver/support/cdp_client_generator.rb",
-    rubyopt = ["-w"],
+    srcs = [ "lib/selenium/webdriver/support/cdp_client_generator.rb"],
 )
 
-ruby_library(
-    name = "specs",
-    deps = [
-        "@bundle//:ffi",
-        "@bundle//:rack",
-        "@bundle//:rspec",
-        "@bundle//:webmock",
-        "@bundle//:webrick",
-    ],
-)
-
-ruby_test(
+rb_test(
     name = "chrome-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -251,11 +247,9 @@ ruby_test(
         "--format",
         "documentation",
         "--force-color",
-        "rb/spec",
+        "./rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -264,11 +258,11 @@ ruby_test(
         ":bidi",
         ":chrome",
         ":devtools",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "edge-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -280,9 +274,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -291,11 +283,11 @@ ruby_test(
         ":bidi",
         ":devtools",
         ":edge",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "firefox-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -307,12 +299,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    data = [
-        "//common/extensions",
-    ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -321,11 +308,12 @@ ruby_test(
         ":bidi",
         ":devtools",
         ":firefox",
-        ":specs",
+        "@bundle",
+        "//common/extensions",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "firefox-nightly-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -337,12 +325,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    data = [
-        "//common/extensions",
-    ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -351,11 +334,11 @@ ruby_test(
         ":bidi",
         ":devtools",
         ":firefox",
-        ":specs",
+         "//common/extensions",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "safari-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -367,9 +350,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -377,11 +358,11 @@ ruby_test(
     deps = [
         ":bidi",
         ":safari",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "safari-preview-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -393,9 +374,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -403,11 +382,11 @@ ruby_test(
     deps = [
         ":bidi",
         ":safari",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "unit-test",
     srcs = glob([
         "spec/unit/selenium/webdriver/**/*_spec.rb",
@@ -419,9 +398,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -433,11 +410,11 @@ ruby_test(
         ":firefox",
         ":ie",
         ":safari",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "remote-chrome-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -450,9 +427,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -462,11 +437,11 @@ ruby_test(
         ":chrome",
         ":devtools",
         ":remote",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "remote-edge-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -479,9 +454,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -491,11 +464,11 @@ ruby_test(
         ":devtools",
         ":edge",
         ":remote",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "remote-firefox-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -508,9 +481,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -520,11 +491,11 @@ ruby_test(
         ":devtools",
         ":firefox",
         ":remote",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "remote-safari-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -537,9 +508,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -548,11 +517,11 @@ ruby_test(
         ":bidi",
         ":remote",
         ":safari",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_test(
+rb_test(
     name = "remote-safari-preview-test",
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
@@ -565,9 +534,7 @@ ruby_test(
         "--force-color",
         "rb/spec",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/rspec",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rspec",
     tags = [
         "no-sandbox",
         "requires-network",
@@ -576,11 +543,11 @@ ruby_test(
         ":bidi",
         ":remote",
         ":safari",
-        ":specs",
+        "@bundle",
     ],
 )
 
-ruby_binary(
+rb_binary(
     name = "docs",
     srcs = glob([
         "lib/**/*.rb",
@@ -594,11 +561,11 @@ ruby_binary(
         "rb/CHANGES",
         "rb/README.md",
     ],
-    main = "@bundle//:bin/yard",
-    deps = ["@bundle//:yard"],
+    bin = "@bundle//:bin/yard",
+    deps = ["@bundle"],
 )
 
-ruby_binary(
+rb_binary(
     name = "lint",
     srcs = glob([
         "lib/**/*.rb",
@@ -616,23 +583,19 @@ ruby_binary(
         "rb/selenium-devtools.gemspec",
         "rb/selenium-webdriver.gemspec",
     ],
-    main = "@bundle//:bin/rubocop",
-    rubyopt = ["-w"],
+    bin = "@bundle//:bin/rubocop",
     deps = [
-        "@bundle//:rubocop",
-        "@bundle//:rubocop-performance",
-        "@bundle//:rubocop-rspec",
+        "@bundle",
     ],
 )
 
-ruby_binary(
+rb_binary(
     name = "console",
     args = [
         "-rselenium-webdriver",
         "-rselenium/devtools",
     ],
-    includes = ["rb/lib"],
-    main = "@bundle//:bin/pry",
+    bin = "@bundle//:bin/pry",
     deps = [
         ":bidi",
         ":chrome",
@@ -642,6 +605,6 @@ ruby_binary(
         ":firefox",
         ":ie",
         ":safari",
-        "@bundle//:pry",
+        "@bundle",
     ],
 )
