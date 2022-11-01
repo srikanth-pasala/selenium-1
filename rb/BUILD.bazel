@@ -247,7 +247,7 @@ rb_test(
         "--format",
         "documentation",
         "--force-color",
-        "./rb/spec",
+        "rb/spec",
     ],
     bin = "@bundle//:bin/rspec",
     tags = [
@@ -292,7 +292,7 @@ rb_test(
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
         "spec/integration/selenium/webdriver/firefox/**/*_spec.rb",
-    ]),
+    ]) + ["//common/extensions"],
     args = [
         "--format",
         "documentation",
@@ -309,7 +309,6 @@ rb_test(
         ":devtools",
         ":firefox",
         "@bundle",
-        "//common/extensions",
     ],
 )
 
@@ -318,7 +317,7 @@ rb_test(
     srcs = glob([
         "spec/integration/selenium/webdriver/*_spec.rb",
         "spec/integration/selenium/webdriver/firefox/**/*_spec.rb",
-    ]),
+    ]) + ["//common/extensions"],
     args = [
         "--format",
         "documentation",
@@ -334,7 +333,6 @@ rb_test(
         ":bidi",
         ":devtools",
         ":firefox",
-         "//common/extensions",
     ],
 )
 
