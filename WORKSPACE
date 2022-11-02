@@ -321,9 +321,11 @@ load("//common:repositories.bzl", "pin_browsers")
 
 pin_browsers()
 
-local_repository(
+http_archive(
     name = "rules_ruby",
-    path = "../rules_ruby",
+    sha256 = "d6076cbe4a457ae33166e5ac5c0f7d8d1b1a92e2fd62ca3e2c426d141269a447",
+    strip_prefix = "rules_ruby_simple-f90e3bafe379a5507e299b6bf63e44f8c5a7577d",
+    url = "https://github.com/p0deje/rules_ruby_simple/archive/f90e3bafe379a5507e299b6bf63e44f8c5a7577d.zip",
 )
 
 load(
@@ -343,5 +345,4 @@ rb_bundle(
         "//:rb/selenium-webdriver.gemspec",
     ],
     gemfile = "//:rb/Gemfile",
-    # gemfile_lock = "//:rb/Gemfile.lock",
 )
