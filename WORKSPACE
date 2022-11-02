@@ -334,7 +334,7 @@ load(
   "rb_download",
 )
 
-rb_download(version = "2.7.5")
+rb_download(version = "2.7.6")
 
 rb_bundle(
     name = "bundle",

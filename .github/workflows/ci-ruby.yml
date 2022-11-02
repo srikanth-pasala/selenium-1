@@ -35,10 +35,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
       - name: Cache Bazel artifacts
         uses: actions/cache@v2
         with:
@@ -68,10 +64,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
       - name: Cache Bazel artifacts
         uses: actions/cache@v2
         with:
@@ -112,10 +104,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
       - name: Cache Bazel artifacts
         uses: actions/cache@v2
         with:
@@ -151,10 +139,6 @@ jobs:
     steps:
       - name: Checkout source tree
         uses: actions/checkout@v2
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
       - name: Cache Bazel artifacts
         uses: actions/cache@v2
         with:
@@ -176,10 +160,6 @@ jobs:
     steps:
       - name: Checkout source tree
         uses: actions/checkout@v2
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
       - name: Cache Bazel artifacts
         uses: actions/cache@v2
         with:
@@ -201,14 +181,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ '2.7', '3.1' ]
+        ruby: [ '2.7.6', '3.1.2' ]
     steps:
       - name: Checkout source tree
         uses: actions/checkout@v2
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
       - name: Cache Bazel artifacts
         uses: actions/cache@v2
         with:
@@ -218,6 +194,8 @@ jobs:
           key: ${{ runner.os }}-bazel-ruby-unit-test-${{ matrix.ruby }}-${{ hashFiles('**/BUILD.bazel') }}
           restore-keys: |
             ${{ runner.os }}-bazel-ruby-unit-test-${{ matrix.ruby }}-
+      - name: Patch WORKSPACE to select Ruby ${{ matrix.ruby }}
+        run: sed -i -E "s/(rb_download\(version = \")(.+)(\"\))/\13.0.3\3/" WORKSPACE
       - name: Run unit tests
         uses: ./.github/actions/bazel
         with:
